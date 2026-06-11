@@ -81,9 +81,15 @@ const strengths = [
 ];
 
 const contacts = [
-  { label: '微信号', value: 'qazxsw01020304', icon: MessageCircle },
-  { label: 'QQ 号', value: '2275803244', icon: Phone },
-  { label: '邮箱', value: '2275803244@qq.com', icon: Mail }
+  { label: '微信号', value: 'qazxsw01020304', icon: MessageCircle, action: 'copy' },
+  {
+    label: 'QQ 号',
+    value: '2275803244',
+    icon: Phone,
+    action: 'qq',
+    href: 'https://wpa.qq.com/msgrd?v=3&uin=2275803244&site=qq&menu=yes'
+  },
+  { label: '邮箱', value: '2275803244@qq.com', icon: Mail, action: 'mail', href: 'mailto:2275803244@qq.com' }
 ];
 
 function App() {
@@ -348,16 +354,22 @@ function ContactInfo({ copied, setCopied }) {
           <p>联系方式来自小程序「我的 - 联系开发者」。用户遇到问题、想提建议或合作沟通，都可以从这里找到入口。</p>
         </div>
         <div className="contactCards">
-          {contacts.map(({ icon: Icon, label, value }) => (
+          {contacts.map(({ action, href, icon: Icon, label, value }) => (
             <article className="contactCard" data-reveal key={label}>
               <div className="contactIcon">
                 <Icon size={28} />
               </div>
               <span>{label}</span>
               <strong>{value}</strong>
-              <button onClick={() => copyContact(value)} type="button">
-                {copied === value ? '已复制' : '复制'}
-              </button>
+              {action === 'copy' ? (
+                <button onClick={() => copyContact(value)} type="button">
+                  {copied === value ? '已复制' : '复制微信号'}
+                </button>
+              ) : (
+                <a className="contactAction" href={href} rel="noreferrer" target="_blank">
+                  {action === 'qq' ? '立即联系' : '发送邮件'}
+                </a>
+              )}
             </article>
           ))}
         </div>
@@ -383,7 +395,12 @@ function ContactFooter() {
             <Mail size={20} />
             放置小程序码
           </a>
-          <a className="secondaryAction light" href="tel:13800000000">
+          <a
+            className="secondaryAction light"
+            href="https://wpa.qq.com/msgrd?v=3&uin=2275803244&site=qq&menu=yes"
+            rel="noreferrer"
+            target="_blank"
+          >
             <MessageCircle size={20} />
             联系开发者
           </a>
