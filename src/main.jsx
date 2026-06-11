@@ -95,6 +95,7 @@ const contacts = [
 function App() {
   const [activeWord, setActiveWord] = useState(0);
   const [copied, setCopied] = useState('');
+  const [heroVideoReady, setHeroVideoReady] = useState(false);
 
   useEffect(() => {
     const timer = window.setInterval(() => {
@@ -121,7 +122,13 @@ function App() {
 
   return (
     <main>
-      <Hero currentWord={currentWord} activeWord={activeWord} setActiveWord={setActiveWord} />
+      <Hero
+        currentWord={currentWord}
+        activeWord={activeWord}
+        heroVideoReady={heroVideoReady}
+        setActiveWord={setActiveWord}
+        setHeroVideoReady={setHeroVideoReady}
+      />
       <ProductStory currentWord={currentWord} />
       <ScreenShowcase />
       <Features />
@@ -133,15 +140,26 @@ function App() {
   );
 }
 
-function Hero({ currentWord, activeWord, setActiveWord }) {
+function Hero({ currentWord, activeWord, heroVideoReady, setActiveWord, setHeroVideoReady }) {
+  const handleVideoRef = (video) => {
+    if (!video) return;
+    video.play?.().catch(() => {
+      setHeroVideoReady(false);
+    });
+  };
+
   return (
     <section className="hero" id="home">
       <video
-        className="heroVideo"
+        className={`heroVideo ${heroVideoReady ? 'isReady' : ''}`}
         autoPlay
         muted
         loop
+        onCanPlay={() => setHeroVideoReady(true)}
+        onLoadedData={() => setHeroVideoReady(true)}
         playsInline
+        preload="auto"
+        ref={handleVideoRef}
       >
         <source src="assets/hero-study.mp4" type="video/mp4" />
       </video>

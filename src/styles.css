@@ -30,6 +30,10 @@ html {
   scroll-behavior: smooth;
 }
 
+section {
+  scroll-margin-top: 18px;
+}
+
 body {
   margin: 0;
   overflow-x: hidden;
@@ -92,14 +96,20 @@ button {
 }
 
 .heroVideo {
-  z-index: 0;
+  z-index: 1;
   object-fit: cover;
+  opacity: 0;
   filter: saturate(0.92) contrast(1.04);
+  transition: opacity 700ms ease;
+}
+
+.heroVideo.isReady {
+  opacity: 1;
 }
 
 .heroImage {
   z-index: 0;
-  opacity: 0;
+  opacity: 1;
   background:
     radial-gradient(circle at 72% 35%, rgba(255, 207, 90, 0.18), transparent 30%),
     linear-gradient(115deg, rgba(8, 22, 22, 0.86), rgba(8, 22, 22, 0.36) 52%, rgba(8, 22, 22, 0.82));
@@ -108,7 +118,7 @@ button {
 }
 
 .heroOverlay {
-  z-index: 1;
+  z-index: 2;
   background:
     radial-gradient(circle at 72% 35%, rgba(255, 207, 90, 0.22), transparent 30%),
     linear-gradient(90deg, rgba(5, 17, 18, 0.92), rgba(5, 17, 18, 0.54) 54%, rgba(5, 17, 18, 0.74)),
@@ -206,7 +216,7 @@ button {
 
 .heroContent {
   position: relative;
-  z-index: 2;
+  z-index: 3;
   display: grid;
   min-height: calc(100vh - 92px);
   grid-template-columns: minmax(0, 1.06fr) 470px;
@@ -401,7 +411,7 @@ h1 {
   position: absolute;
   right: 48px;
   bottom: 42px;
-  z-index: 3;
+  z-index: 4;
   display: inline-flex;
   align-items: center;
   gap: 10px;
@@ -642,7 +652,6 @@ h1 {
 
 .screenMock:nth-child(2),
 .screenMock:nth-child(4) {
-  margin-top: 54px;
   animation-delay: -1.8s;
 }
 
@@ -1231,6 +1240,10 @@ h1 {
 }
 
 @media (max-width: 760px) {
+  section {
+    scroll-margin-top: 14px;
+  }
+
   body {
     padding-bottom: calc(86px + env(safe-area-inset-bottom));
     background: #f8faff;
@@ -1276,6 +1289,23 @@ h1 {
   .hero {
     min-height: auto;
     border-radius: 0 0 30px 30px;
+    background:
+      radial-gradient(circle at 20% 24%, rgba(90, 220, 192, 0.2), transparent 32%),
+      radial-gradient(circle at 82% 18%, rgba(141, 150, 255, 0.22), transparent 30%),
+      #0c1c1d;
+  }
+
+  .heroVideo {
+    min-height: 100%;
+    object-position: 45% center;
+  }
+
+  .heroImage {
+    opacity: 0.92;
+    background:
+      radial-gradient(circle at 22% 18%, rgba(90, 220, 192, 0.22), transparent 32%),
+      radial-gradient(circle at 80% 22%, rgba(255, 207, 90, 0.18), transparent 28%),
+      linear-gradient(135deg, rgba(8, 22, 22, 0.96), rgba(24, 42, 58, 0.84) 48%, rgba(8, 22, 22, 0.96));
   }
 
   .heroOverlay {
@@ -1455,11 +1485,11 @@ h1 {
   }
 
   .screenRail {
-    width: calc(100% + 18px);
+    width: 100%;
     display: flex;
     gap: 16px;
     overflow-x: auto;
-    padding: 4px 18px 20px 0;
+    padding: 4px 0 20px;
     scroll-snap-type: x mandatory;
     scrollbar-width: none;
   }
