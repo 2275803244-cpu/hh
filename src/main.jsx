@@ -87,7 +87,7 @@ const contacts = [
     value: '2275803244',
     icon: Phone,
     action: 'qq',
-    href: 'https://wpa.qq.com/msgrd?v=3&uin=2275803244&site=qq&menu=yes'
+    href: 'tencent://AddContact/?fromId=45&fromSubId=1&subcmd=all&uin=2275803244'
   },
   { label: '邮箱', value: '2275803244@qq.com', icon: Mail, action: 'mail', href: 'mailto:2275803244@qq.com' }
 ];
@@ -123,10 +123,12 @@ function App() {
     <main>
       <Hero currentWord={currentWord} activeWord={activeWord} setActiveWord={setActiveWord} />
       <ProductStory currentWord={currentWord} />
+      <ScreenShowcase />
       <Features />
       <Strengths />
       <ContactInfo copied={copied} setCopied={setCopied} />
       <ContactFooter />
+      <MobileDock setCopied={setCopied} />
     </main>
   );
 }
@@ -140,18 +142,14 @@ function Hero({ currentWord, activeWord, setActiveWord }) {
         muted
         loop
         playsInline
-        poster="https://images.unsplash.com/photo-1513258496099-48168024aec0?auto=format&fit=crop&w=2600&q=88"
       >
-        <source
-          src="https://cdn.coverr.co/videos/coverr-outdoor-study-session-in-park/1080p.mp4"
-          type="video/mp4"
-        />
+        <source src="assets/hero-study.mp4" type="video/mp4" />
       </video>
       <div className="heroImage" />
       <div className="heroOverlay" />
       <nav className="nav shell">
         <a className="brand" href="#home" aria-label="返回首页">
-          <img alt="" src="/assets/ciguang-app-icon-final.png" />
+          <img alt="" src="assets/ciguang-app-icon-final.png" />
           <span>词光单词</span>
           <small>V2.0 Mini Program</small>
         </a>
@@ -230,8 +228,8 @@ function ProductStory({ currentWord }) {
       <div className="shell twoCol">
         <div className="appVisual" data-reveal>
           <div className="phoneFrame">
-          <div className="phoneHeader">
-              <span><img alt="" src="/assets/ciguang-app-icon-final.png" />词光单词</span>
+            <div className="phoneHeader">
+              <span><img alt="" src="assets/ciguang-app-icon-final.png" />词光单词</span>
               <Search size={18} />
             </div>
             <div className="studyCard">
@@ -270,6 +268,86 @@ function ProductStory({ currentWord }) {
               </div>
             ))}
           </div>
+        </div>
+      </div>
+    </section>
+  );
+}
+
+function ScreenShowcase() {
+  return (
+    <section className="section screenShowcase" id="screens">
+      <div className="shell">
+        <div className="sectionHead" data-reveal>
+          <p className="sectionKicker">Mini Program Screens</p>
+          <h2>把真实学习路径展示出来</h2>
+          <p>用小程序核心页面做成手机界面展示，让访问者第一眼看懂词光单词能怎么用。</p>
+        </div>
+        <div className="screenRail">
+          <article className="screenMock learnScreen" data-reveal>
+            <div className="screenTop">
+              <span>今日速记</span>
+              <Search size={16} />
+            </div>
+            <div className="wordSnapshot">
+              <small>CET-6 今日词</small>
+              <strong>clarity</strong>
+              <p>清晰；明确；透明</p>
+              <button type="button">记住了</button>
+            </div>
+            <div className="screenRows">
+              <span>待复习 <b>18</b></span>
+              <span>错词本 <b>12</b></span>
+            </div>
+          </article>
+
+          <article className="screenMock reviewScreen" data-reveal>
+            <div className="screenTop">
+              <span>智能复习</span>
+              <Clock3 size={16} />
+            </div>
+            <div className="progressRing">
+              <strong>86%</strong>
+              <span>今日掌握率</span>
+            </div>
+            <div className="reviewQueue">
+              <span>SM-2 间隔复习</span>
+              <span>优先拉回快忘词</span>
+              <span>完成后自动进入下一组</span>
+            </div>
+          </article>
+
+          <article className="screenMock translateScreen" data-reveal>
+            <div className="screenTop">
+              <span>AI 查词翻译</span>
+              <Languages size={16} />
+            </div>
+            <div className="searchBox">输入单词或句子</div>
+            <div className="translateCard">
+              <small>radiant</small>
+              <p>光芒四射的；喜悦的</p>
+              <em>AI 例句、同义词、语境解释</em>
+            </div>
+          </article>
+
+          <article className="screenMock mineScreen" data-reveal>
+            <div className="screenTop">
+              <span>我的学习</span>
+              <Trophy size={16} />
+            </div>
+            <div className="profileBubble">
+              <img alt="" src="assets/ciguang-app-icon-final.png" />
+              <div>
+                <strong>词光单词</strong>
+                <span>连续学习 7 天</span>
+              </div>
+            </div>
+            <div className="mineStats">
+              <span><b>3万+</b>词汇</span>
+              <span><b>9类</b>词库</span>
+              <span><b>AI</b>辅助</span>
+            </div>
+          </article>
         </div>
       </div>
     </section>
@@ -365,9 +443,18 @@ function ContactInfo({ copied, setCopied }) {
                 <button onClick={() => copyContact(value)} type="button">
                   {copied === value ? '已复制' : '复制微信号'}
                 </button>
+              ) : action === 'qq' ? (
+                <div className="contactActions">
+                  <button onClick={() => copyContact(value)} type="button">
+                    {copied === value ? '已复制' : '复制 QQ'}
+                  </button>
+                  <a className="contactAction" href={href}>
+                    加好友
+                  </a>
+                </div>
               ) : (
                 <a className="contactAction" href={href} rel="noreferrer" target="_blank">
-                  {action === 'qq' ? '立即联系' : '发送邮件'}
+                  发送邮件
                 </a>
               )}
             </article>
@@ -391,15 +478,13 @@ function ContactFooter() {
           这里后续可以放小程序码、客服微信、产品二维码或下载指引。你把正式图片发来后，我会把这一屏做成真正的转化收尾页。
         </p>
         <div className="footerActions">
-          <a className="primaryAction" href="mailto:hello@example.com">
+          <a className="primaryAction" href="#contact-info">
             <Mail size={20} />
             放置小程序码
           </a>
           <a
             className="secondaryAction light"
-            href="https://wpa.qq.com/msgrd?v=3&uin=2275803244&site=qq&menu=yes"
-            rel="noreferrer"
-            target="_blank"
+            href="tencent://AddContact/?fromId=45&fromSubId=1&subcmd=all&uin=2275803244"
           >
             <MessageCircle size={20} />
             联系开发者
@@ -407,6 +492,32 @@ function ContactFooter() {
         </div>
       </div>
     </section>
+  );
+}
+
+function MobileDock({ setCopied }) {
+  const copyQQ = async () => {
+    try {
+      await navigator.clipboard.writeText('2275803244');
+      setCopied('2275803244');
+      window.setTimeout(() => setCopied(''), 1600);
+    } catch {
+      setCopied('复制失败，请手动选择');
+      window.setTimeout(() => setCopied(''), 1600);
+    }
+  };
+
+  return (
+    <div className="mobileDock" aria-label="手机端快捷联系">
+      <button onClick={copyQQ} type="button">
+        <Phone size={18} />
+        复制 QQ
+      </button>
+      <a href="tencent://AddContact/?fromId=45&fromSubId=1&subcmd=all&uin=2275803244">
+        <MessageCircle size={18} />
+        加好友
+      </a>
+    </div>
   );
 }
 
