@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo, useState } from 'react';
+﻿import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { createRoot } from 'react-dom/client';
 import {
   ArrowUpRight,
@@ -18,6 +18,7 @@ import {
   Target,
   Trophy
 } from 'lucide-react';
+import GestureControl from './GestureControl.jsx';
 import './styles.css';
 
 const stats = [
@@ -135,12 +136,66 @@ function App() {
       <Strengths />
       <ContactInfo copied={copied} setCopied={setCopied} />
       <ContactFooter />
+      <GestureControl
+        onSwipeLeft={() => setActiveWord((p) => (p - 1 + words.length) % words.length)}
+        onSwipeRight={() => setActiveWord((p) => (p + 1) % words.length)}
+        onSwipeUp={() => window.scrollBy({ top: window.innerHeight * 0.6, behavior: 'smooth' })}
+        onSwipeDown={() => window.scrollBy({ top: -window.innerHeight * 0.6, behavior: 'smooth' })}
+      />
       <MobileDock setCopied={setCopied} />
     </main>
   );
 }
 
 function Hero({ currentWord, activeWord, heroVideoReady, setActiveWord, setHeroVideoReady }) {
+  const [dragX, setDragX] = useState(0);
+  const [isDragging, setIsDragging] = useState(false);
+  const dragState = useRef({ startX: 0, startY: 0, currentX: 0, active: false, captured: false });
+  const SWIPE_THRESHOLD = 60;
+
+  const handleCardPointerDown = useCallback((e) => {
+    dragState.current = { startX: e.clientX, startY: e.clientY, currentX: e.clientX, active: true, captured: false };
+  }, []);
+
+  const handleCardPointerMove = useCallback((e) => {
+    if (!dragState.current.active) return;
+    const dx = e.clientX - dragState.current.startX;
+    const dy = e.clientY - dragState.current.startY;
+
+    if (!dragState.current.captured) {
+      if (Math.abs(dx) < 8 && Math.abs(dy) < 8) return;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        dragState.current.captured = true;
+        dragState.current.currentX = e.clientX;
+        setIsDragging(true);
+        e.currentTarget.setPointerCapture(e.pointerId);
+      } else {
+        dragState.current.active = false;
+      }
+      return;
+    }
+
+    dragState.current.currentX = e.clientX;
+    setDragX(e.clientX - dragState.current.startX);
+  }, []);
+
+  const handleCardPointerUp = useCallback(() => {
+    if (!dragState.current.active && !dragState.current.captured) return;
+    const delta = dragState.current.currentX - dragState.current.startX;
+    const wasCaptured = dragState.current.captured;
+    dragState.current.active = false;
+    dragState.current.captured = false;
+    setIsDragging(false);
+    if (wasCaptured && Math.abs(delta) > SWIPE_THRESHOLD) {
+      if (delta > 0) {
+        setActiveWord((prev) => (prev - 1 + words.length) % words.length);
+      } else {
+        setActiveWord((prev) => (prev + 1) % words.length);
+      }
+    }
+    setDragX(0);
+  }, [setActiveWord]);
+
   const handleVideoRef = (video) => {
     if (!video) return;
     video.play?.().catch(() => {
@@ -205,7 +260,20 @@ function Hero({ currentWord, activeWord, heroVideoReady, setActiveWord, setHeroV
         </div>
 
         <div className="heroPanel" data-reveal>
-          <div className="wordCard">
+          <div
+            className={`wordCard${isDragging ? ' isDragging' : ''}`}
+            onPointerDown={handleCardPointerDown}
+            onPointerMove={handleCardPointerMove}
+            onPointerUp={handleCardPointerUp}
+            onPointerCancel={handleCardPointerUp}
+            style={{
+              transform: isDragging
+                ? `translateX(${dragX}px) rotate(${dragX * 0.04}deg)`
+                : dragX !== 0
+                  ? 'translateX(0px) rotate(0deg)'
+                  : undefined
+            }}
+          >
             <div className="wordCardTop">
               <span>{currentWord.tag}</span>
               <Sparkles size={18} />
@@ -293,6 +361,35 @@ function ProductStory({ currentWord }) {
 }
 
 function ScreenShowcase() {
+  const railRef = useRef(null);
+  const [isRailDragging, setIsRailDragging] = useState(false);
+  const railDrag = useRef({ startX: 0, scrollLeft: 0, active: false });
+
+  const handleRailPointerDown = useCallback((e) => {
+    const rail = railRef.current;
+    if (!rail) return;
+    railDrag.current = {
+      startX: e.clientX,
+      scrollLeft: rail.scrollLeft,
+      active: true
+    };
+    setIsRailDragging(true);
+    rail.setPointerCapture(e.pointerId);
+  }, []);
+
+  const handleRailPointerMove = useCallback((e) => {
+    if (!railDrag.current.active) return;
+    const rail = railRef.current;
+    if (!rail) return;
+    const dx = e.clientX - railDrag.current.startX;
+    rail.scrollLeft = railDrag.current.scrollLeft - dx;
+  }, []);
+
+  const handleRailPointerUp = useCallback(() => {
+    railDrag.current.active = false;
+    setIsRailDragging(false);
+  }, []);
+
   return (
     <section className="section screenShowcase" id="screens">
       <div className="shell">
@@ -301,7 +398,14 @@ function ScreenShowcase() {
           <h2>把真实学习路径展示出来</h2>
           <p>用小程序核心页面做成手机界面展示，让访问者第一眼看懂词光单词能怎么用。</p>
         </div>
-        <div className="screenRail">
+        <div
+          className={`screenRail${isRailDragging ? ' isDragging' : ''}`}
+          onPointerDown={handleRailPointerDown}
+          onPointerMove={handleRailPointerMove}
+          onPointerUp={handleRailPointerUp}
+          onPointerCancel={handleRailPointerUp}
+          ref={railRef}
+        >
           <article className="screenMock learnScreen" data-reveal>
             <div className="screenTop">
               <span>今日速记</span>
